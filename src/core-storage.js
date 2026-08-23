@@ -11,7 +11,7 @@ const DEDUPE_SIMILARITY = 0.76;
 const CACHE_RETENTION_MS = 72 * 60 * 60 * 1000;
 const BACKUP_FORMAT = 'myfeed-backup';
 const BACKUP_VERSION = 1;
-const APP_VERSION = '0.2.6';
+const APP_VERSION = '0.3.0';
 
 function v031StartupViewFromUrl() {
   try {
