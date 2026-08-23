@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "MyFeed",
-  "version": "0.2.8",
-  "description": "表示中を既読でも重複話題を確認済みに固定するMyFeed（最古代表・全件表示・国内+海外News・6並列更新対応）",
+  "version": "0.2.9",
+  "description": "個別フィードのフォルダ変更・削除・個別更新に対応したMyFeed（最古代表・全件表示・国内+海外News・6並列更新対応）",
   "permissions": [
     "storage",
     "tabs"
