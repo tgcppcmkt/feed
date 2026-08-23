@@ -53,6 +53,8 @@ jobs:
               'reading-flow.js',
               'bulk-read-fix-v028.js',
               'source-view-actions.js',
+              'gpt-export.js',
+              'fast-refresh-v030.js',
           ]
 
           css_order = [
@@ -115,9 +117,13 @@ jobs:
               'google-news-locale.js',
               'bulk-read-fix-v028.js',
               'source-view-actions.js',
+              'gpt-export.js',
+              'fast-refresh-v030.js',
           ]
           if not all(name in dashboard_js for name in required_modules):
               raise SystemExit('dashboard.js bundle validation failed')
+          if 'V030_NORMAL_CONCURRENCY = 12' not in dashboard_js or 'V030_GOOGLE_CONCURRENCY = 6' not in dashboard_js:
+              raise SystemExit('v0.3.0 fast-refresh validation failed')
           style_css = (out / 'style.css').read_text(encoding='utf-8')
           if not all(name in style_css for name in ['style-latest.css', 'source-view-actions.css']):
               raise SystemExit('style.css bundle validation failed')
