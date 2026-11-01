@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "MyFeed",
+  "version": "0.3.0",
+  "description": "高速更新v2対応MyFeed（WEB/RSS 12並列・Google News 6並列・News画像後追い補完・個別フィード操作・GPT用TXT出力）",
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_title": "MyFeedを開く"
+  }
+}

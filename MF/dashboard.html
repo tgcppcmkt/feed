@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ja" data-theme="system">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MyFeed</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="source-view-actions.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="assets/myfeed-brand-banner.png" alt="MyFeed" class="brand-banner" />
+      </div>
+
+      <nav class="nav-list" id="navList">
+        <button class="nav-item active" data-filter="all"><span>📰</span><span>すべて</span><b id="countAll">0</b></button>
+        <button class="nav-item" data-filter="unread"><span>●</span><span>未読</span><b id="countUnread">0</b></button>
+        <button class="nav-item" data-filter="favorite"><span>⭐</span><span>お気に入り</span><b id="countFavorite">0</b></button>
+        <div class="nav-divider"></div>
+        <div id="sourceNav" class="source-nav"></div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button id="openSourcesBtn" class="secondary-btn full">＋ フィードを登録</button>
+        <button id="openCategoriesBtn" class="ghost-btn full">＋ カテゴリを管理</button>
+        <button id="openSettingsBtn" class="ghost-btn full">⚙ 設定</button>
+      </div>
+      <div id="sidebarResizer" class="sidebar-resizer" role="separator" aria-orientation="vertical" aria-label="左カラムの幅を変更" title="ドラッグで左カラム幅を変更 / ダブルクリックで標準幅"></div>
+    </aside>
+
+    <main class="main">
+      <div class="sticky-main-header">
+      <header class="topbar">
+        <div>
+          <h2 id="viewTitle">すべての記事</h2>
+          <p id="statusText">フィードを登録して「更新」を押してください。</p>
+          <div id="refreshProgress" class="refresh-progress" hidden>
+            <div class="refresh-progress-head">
+              <span id="refreshProgressLabel">フィードを取得しています…</span>
+              <strong id="refreshProgressPercent">0%</strong>
+            </div>
+            <div id="refreshProgressTrack"
+                 class="refresh-progress-track"
+                 role="progressbar"
+                 aria-label="フィード更新の進捗"
+                 aria-valuemin="0"
+                 aria-valuemax="100"
+                 aria-valuenow="0">
+              <div id="refreshProgressFill" class="refresh-progress-fill"></div>
+            </div>
+            <div id="refreshProgressDetail" class="refresh-progress-detail">
+              準備中…
+            </div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <label class="search-box">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input id="searchInput" type="search" placeholder="記事を検索" autocomplete="off" />
+          </label>
+          <button id="refreshBtn" class="primary-btn">↻ 更新</button>
+        </div>
+      </header>
+
+      <section class="toolbar">
+        <div class="toolbar-left">
+          <select id="sortSelect" aria-label="表示・並び順">
+            <option value="newest">新しい順</option>
+            <option value="oldest">古い順</option>
+            <option value="unreadOnly">未読のみ</option>
+            <option value="readOnly">既読のみ</option>
+            <option value="all">すべて</option>
+          </select>
+          <button id="markAllReadBtn" class="ghost-btn">表示中を既読</button>
+          <div class="view-toggle" role="group" aria-label="記事の表示方法">
+            <button id="viewCardBtn" class="view-toggle-btn active" type="button" aria-pressed="true">▦ カード</button>
+            <button id="viewCompactBtn" class="view-toggle-btn" type="button" aria-pressed="false">☷ コンパクト</button>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <span id="articleCount">0件</span>
+        </div>
+      </section>
+      </div>
+
+      <section id="emptyState" class="empty-state">
+        <div class="empty-icon">🛰️</div>
+        <h3>まだ記事がありません</h3>
+        <p>RSS、Google Newsのキーワード、Xアカウントを登録できます。</p>
+        <button id="emptyAddBtn" class="primary-btn">最初のフィードを登録</button>
+      </section>
+
+      <section id="feedList" class="feed-list" hidden></section>
+      <div id="loadMoreWrap" class="load-more-wrap" hidden>
+        <button id="loadMoreBtn" class="secondary-btn">残りをすべて表示</button>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="sourcesDialog" class="modal">
+    <form method="dialog" class="modal-card" id="sourceForm">
+      <div class="modal-header">
+        <div>
+          <h3>フィードを登録</h3>
+          <p>3種類を同じ一覧へまとめます。</p>
+        </div>
+        <button id="closeSourcesBtn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+      </div>
+
+      <div class="form-grid auto-source-form">
+        <select id="sourceType" hidden aria-hidden="true">
+          <option value="rss">Webサイト RSS</option>
+          <option value="google">Google News キーワード</option>
+          <option value="x">Xアカウント（Nitter RSS）</option>
+        </select>
+        <input id="sourceName" type="hidden" />
+
+        <label class="wide">
+          <span id="sourceValueLabel">URL / Xアカウント / キーワード</span>
+          <input id="sourceValue" required autocomplete="off"
+                 placeholder="https://example.com / https://x.com/OpenAI / @OpenAI / 生成AI" />
+          <small id="sourceHint">入力内容から WEB RSS / X / Google News を自動判定します。</small>
+          <small id="sourceDetectHint" class="source-detect-hint">自動判定：入力待ち</small>
+        </label>
+
+        <div class="source-register-bottom-row wide">
+          <label class="source-category-select">
+            <span>カテゴリ</span>
+            <select id="sourceCategory">
+              <option value="">未分類</option>
+            </select>
+          </label>
+
+          <label class="source-manager-search-label">
+            <span>登録済みフィードを検索</span>
+            <div class="source-manager-search-box">
+              <span class="source-manager-search-icon" aria-hidden="true">🔍</span>
+              <input id="sourceManagerSearch" type="search" autocomplete="off"
+                     placeholder="名前 / URL / @アカウント / カテゴリ" />
+              <button id="sourceManagerSearchClear" class="source-manager-search-clear"
+                      type="button" aria-label="検索をクリア" title="検索をクリア" hidden>×</button>
+            </div>
+            <small>削除したいフィードをすぐ絞り込めます。</small>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelSourcesBtn" type="button" class="ghost-btn">キャンセル</button>
+        <button id="saveSourceBtn" type="submit" value="default" class="primary-btn">登録する</button>
+      </div>
+    </form>
+
+    <div class="source-manager">
+      <div class="source-manager-head">
+        <strong>登録済み</strong>
+        <span id="sourceCount">0件</span>
+      </div>
+      <div id="sourceList" class="source-list"></div>
+    </div>
+  </dialog>
+
+  <dialog id="categoriesDialog" class="modal small">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3>カテゴリを管理</h3>
+          <p>左カラムのフォルダを追加・変更・削除します。</p>
+        </div>
+        <button id="closeCategoriesBtn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+      </div>
+
+      <section class="category-settings standalone-category-settings">
+        <div class="setting-section-head">
+          <div>
+            <strong>カテゴリ</strong>
+            <small>フィードは左カラムでドラッグしてカテゴリ間を移動できます。</small>
+          </div>
+        </div>
+        <div class="category-add-row">
+          <input id="categoryNameInput" type="text" placeholder="例：AI・テック" maxlength="40" />
+          <button id="addCategoryBtn" type="button" class="secondary-btn">追加</button>
+        </div>
+        <div id="categoryManagerList" class="category-manager-list"></div>
+      </section>
+
+      <div class="modal-actions">
+        <button id="doneCategoriesBtn" type="button" class="primary-btn">閉じる</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="settingsDialog" class="modal small">
+    <form method="dialog" class="modal-card" id="settingsForm">
+      <div class="modal-header">
+        <div>
+          <h3>設定</h3>
+          <p>更新間隔などを設定します。</p>
+        </div>
+        <button id="closeSettingsBtn" type="button" class="icon-btn" aria-label="閉じる">×</button>
+      </div>
+
+      <label class="stack-label">
+        <span>画面を開いている間の自動更新</span>
+        <select id="autoRefreshMinutes">
+          <option value="0">OFF</option>
+          <option value="15">15分</option>
+          <option value="30" selected>30分</option>
+          <option value="60">60分</option>
+        </select>
+      </label>
+
+      <label class="stack-label">
+        <span>テーマ</span>
+        <select id="themeMode">
+          <option value="system" selected>ブラウザに合わせる</option>
+          <option value="light">ライト</option>
+          <option value="dark">ダーク</option>
+        </select>
+        <small>「ブラウザに合わせる」はEdge / Windowsのライト・ダーク設定に自動追従します。</small>
+      </label>
+
+      <section class="transfer-settings">
+        <div class="setting-section-head">
+          <div>
+            <strong>インポート・エクスポート</strong>
+            <small>登録フィード、フォルダ構成、設定、⭐お気に入り記事をJSONでバックアップできます。</small>
+          </div>
+        </div>
+        <div class="transfer-actions">
+          <button id="exportDataBtn" type="button" class="secondary-btn">⇩ エクスポート</button>
+          <button id="importDataBtn" type="button" class="ghost-btn">⇧ インポート</button>
+          <input id="importDataInput" type="file" accept="application/json,.json" hidden />
+        </div>
+        <small class="transfer-note">インポートすると現在のフィード構成・設定を置き換え、通常記事キャッシュをクリアします。バックアップ内のお気に入り記事は復元します。</small>
+      </section>
+
+      <div class="danger-zone">
+        <div>
+          <strong>記事キャッシュ</strong>
+          <small>72時間を超えた記事は自動削除します。⭐お気に入り記事は残ります。</small>
+        </div>
+        <button id="clearArticlesBtn" type="button" class="danger-btn">記事を全削除</button>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelSettingsBtn" type="button" class="ghost-btn">キャンセル</button>
+        <button id="saveSettingsBtn" type="submit" value="default" class="primary-btn">保存</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="dashboard.js"></script>
+  <script src="gpt-export.js"></script>
+  <script src="source-view-actions.js"></script>
+  <script src="fast-refresh-v030.js"></script>
+</body>
+</html>
