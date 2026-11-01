@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Feedly GPT Collector",
+  "version": "0.5.1",
+  "description": "Feedlyの表示記事を手動スキャンし、GPT投入向けTSVで書き出します。記事カード単位の重複除外とおすすめ領域除外に対応。",
+  "permissions": [
+    "storage",
+    "downloads",
+    "activeTab",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://feedly.com/*",
+    "https://*.feedly.com/*"
+  ],
+  "action": {
+    "default_title": "Feedly GPT Collector",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://feedly.com/*",
+        "https://*.feedly.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}
